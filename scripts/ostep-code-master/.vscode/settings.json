@@ -1,8 +1,0 @@
-{
-  "files.associations": {
-    "common.h": "c",
-    "common_threads.h": "c",
-    "pthread.h": "c",
-    "__threading_support": "c"
-  }
-}
