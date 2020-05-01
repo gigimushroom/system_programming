@@ -1,0 +1,19 @@
+Impl plan
+
+1. Simple TCP server/client
+2. Concurrent client using pthreads
+3. Refactor common methods to helpers
+4. Re-write TCP server to use select
+5. Re-write TCP server to use epoll
+6. Do something meaningful 
+
+Note:
+Mac does not have epoll. We use kqueue.
+
+References:
+https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
+
+https://www.cs.cmu.edu/afs/cs/academic/class/15213-f99/www/class26/
+
+http://eradman.com/posts/kqueue-tcp.html
+
