@@ -4,13 +4,15 @@
 - Implement a pattern matching function, with a few lambda helpers.
 
 ## How the pattern matcher works
-1. Given pattern in string: `'a*'`, and a text to search from. \
+### Input
+Given pattern in string: `'a*'`, and a text to search from. \
 Example: `match('a*', 'aaaaabbbaa')`
 
-2. Parse the pattern to API string format. \
+### Parsing
+Parse the pattern to API string format. \
 Example result: `'star(lit(‘a’))'`
 
-3. LR Parser supports 4 kinds of input:
+#### LR Parser supports 4 kinds of input
 - expr
 - seq: expr expr ...
 - alternatives: seq | seq | ...
@@ -31,20 +33,28 @@ parse_seq(seq):
   results = []
   for each atom in seq:
     r = parse_atom(atom)
-    add r to results if not None
+    # We requires all atoms in seq match!
+    if r is None, Fail
+    add r to results
   return results
 
 ```
 
-4. Start pattern matching:
+#### Parser has 2 part:
+- Defined above, parsing the input to AST.
+- Convert the tree to the regex API format in string.
+
+
+### Start pattern matching
 - `eval` converts the API string format to actual functions.
 - Use the provided compiled lambdas, like `alt`, `star`, `lit`, etc.
 - Return a set of reminders from the matches.
 
-5. Among the reminders, find the smallest reminder, return the longest match word.
+### Pick result
+Among the reminders, find the smallest reminder, return the longest match word.
 
 
-## Study Section 1
+## Case Study
 ### Choose start symbol and patterns
 ```
 RE => seq RE | seq
