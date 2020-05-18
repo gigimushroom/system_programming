@@ -70,4 +70,38 @@ Process finished with exit code 0
 
 
 
+(['RE', ['expr', ['star', ['unit', ['oneof', '[', ['lit', 'ab'], ']']], '*']]],
+ '')
+star(oneof('ab'))
 
+
+['RE',
+ ['expr',
+  ['group',
+   '(',
+   ['RE',
+    ['expr', ['plus', ['unit', ['lit', 'b']], '+']],
+    ['RE', ['expr', ['plus', ['unit', ['lit', 'c']], '+']]]],
+   ')'
+   ]
+  ]
+ ]
+
+
+['RE',
+  ['expr', ['oneof', '[', ['lit', 'bcfhrsm'], ']']],
+  ['RE', ['expr', ['lit', 'at']]]]
+
+['RE',
+  ['expr',
+   ['star',
+    ['unit',
+     ['alt',
+      '(',
+      ['unit', ['lit', 'a']],
+      '|',
+      ['unit', ['lit', 'b']],
+      ')']],
+    '*']],
+  ['RE', ['expr', ['opt', ['unit', ['lit', 'c']], '?']]]
+ ]
