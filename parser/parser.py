@@ -18,7 +18,30 @@
 from functools import update_wrapper
 from string import split
 import re
+import pprint as pp
 
+# def convert(tree):
+# 	"Convert the tree to the regex API format used in class."
+# 	if isinstance(tree, tuple): tree = tree[0] # Remove () and ending ''.
+# 	seq = tree[1:] # Remove opening 'RE'.
+# 	if len(seq) == 1: return parse_unit(seq[0])	# Single-unit sequences
+# 	return "seq(%s, %s)" % (parse_unit(seq[0]), parse_unit(seq[1]))
+#
+# def parse_unit(unit):
+# 	"Parse an individual unit of a regex pattern."
+# 	type = unit[0]
+# 	if type == 'RE': return convert(unit)
+# 	if type == 'expr': return parse_unit(unit[1])
+# 	if type == 'group': return convert(unit[2])
+# 	if type == 'star': return "star(%s)" % parse_unit(unit[1][1])
+# 	if type == 'plus': return "plus(%s)" % parse_unit(unit[1][1])
+# 	if type == 'opt': return "opt(%s)" % parse_unit(unit[1][1])
+# 	if type == 'alt': return "alt(%s, %s)" % (parse_unit(unit[2][1]), parse_unit(unit[4][1]))
+# 	if type == 'oneof': return "oneof('%s')" % unit[2][1]
+# 	if type == 'lits' or type == 'lit': return "lit('%s')" % unit[1]
+# 	if type == 'dot': return "oneof('?')"
+# 	if type == 'eol': return "eol('$')"
+# 	return "Unable to parse unit."
 
 def grammar(description, whitespace=r'\s*'):
   """Convert a description to a grammar.  Each line is a rule for a
@@ -41,7 +64,7 @@ def grammar(description, whitespace=r'\s*'):
     lhs, rhs = split(line, ' => ', 1)
     alternatives = split(rhs, ' | ')
     G[lhs] = tuple(map(split, alternatives))
-  print G
+  #pp.pprint(G)
   return G
 
 
@@ -92,19 +115,22 @@ def parse(start_symbol, text, grammar):
       result.append(tree)
     return result, text
 
-  #@memo
+  # @memo
   def parse_atom(atom, text):
     if atom in grammar:  # Non-Terminal: tuple of alternatives
       for alternative in grammar[atom]:
+        if atom == 'RE':
+          print alternative, text
         tree, rem = parse_sequence(alternative, text)
         if rem is not None:
           print 'debug:', alternative, atom, tree
           return [atom] + tree, rem
+
       return Fail
     else:  # Terminal: match characters against start of text
       m = re.match(tokenizer % atom, text)
-      if m:
-        print 'searching..', tokenizer % atom, text, 'result', m.group(1)
+      # if m:
+      #  print 'searching:', tokenizer % atom, text, 'Result:', m.group(1)
       return Fail if (not m) else (m.group(1), text[m.end():])
 
   # Body of parse:
@@ -113,49 +139,80 @@ def parse(start_symbol, text, grammar):
 
 Fail = (None, None)
 
-JSON = grammar("""
-object => { } | { members }
-members => pair , members | pair
-pair => string : value
-array => [[] elements []] | [[]]
-elements => value , elements | value
-value => string | number | object | array | true | false | null
-string => "[^"]*"
-number => int
-int => -?[1-9][0-9]*
+REGRAMMAR = grammar("""
+RE => expr RE | expr
+lit => \w+
+oneof => [[] lit []]
+star => unit [*]
+plus => unit [+]
+opt => unit [?]
+group => [(] RE [)]
+alt => [(] unit [|] unit [)]
+eol => [$]
+dot => [.]
+expr => star | plus | opt | alt | oneof | group | lit | dot | eol
+unit => alt | oneof | group | lit | dot | eol
 """, whitespace='\s*')
 
 
-def json_parse(text):
-  r = parse('value', text, JSON)
-  print r
-  return r
+def parse_re(pattern):
+  # Parse a standard regex pattern by converting it to the regex API format used in class.
+  return convert(parse('RE', pattern, REGRAMMAR))
+
+
+def convert(tree):
+  # Convert the tree to the regex API format used in class."
+  pp.pprint(tree)
+  top = tree[1] if tree[0] == 'RE' else None
+  results = []
+  post_order_convert(top, results)
+
+  print 'Result set:', results
+  print 'APIs', ''.join([e for e in results])
+
+
+
+def post_order_convert(tree, results):
+  if tree and isinstance(tree, list):
+    results.append('(')
+    post_order_convert(tree[0], results)
+    results.append(')')
+    results.append('(')
+    post_order_convert(tree[1], results)
+    results.append(')')
+  elif isinstance(tree, str):
+    results.append(tree)
+    print tree
+
+
+def test_convert():
+  tree1 = ['RE', ['expr', ['lit', 'hello']]]
+  tree2 = ['RE',
+            ['expr', ['star', ['unit', ['lit', 'a']], '*']],
+            ['RE',
+             ['expr', ['star', ['unit', ['lit', 'b']], '*']],
+             ['RE', ['expr', ['star', ['unit', ['lit', 'c']], '*']]]
+            ]
+          ]
+  print convert(tree2)
 
 
 def test():
-  # json_parse('3')
-  json_parse('[3, 4, 5]')
-  #     assert json_parse('["testing", "baba"]') == (
-  #         ['value', ['array', '[', ['elements', ['value', ['string', '"testing"']], ',',
-  #                                   ['elements', ['value', ['string', '"baba"']]]], ']']], '')
+  #assert parse_re('hello') == "lit('hello')"
 
-  #     assert json_parse('["testing", 1, 2, 3]') == (
-  #                        ['value', ['array', '[', ['elements', ['value',
-  #                        ['string', '"testing"']], ',', ['elements', ['value', ['number',
-  #                        ['int', '1']]], ',', ['elements', ['value', ['number',
-  #                        ['int', '2']]], ',', ['elements', ['value', ['number',
-  #                        ['int', '3']]]]]]], ']']], '')
+  # parse_re('a*b*c*')
 
-  #     assert json_parse('-123.456e+789') == (
-  #                        ['value', ['number', ['int', '-123'], ['frac', '.456'], ['exp', 'e+789']]], '')
+  assert parse_re('a*b*c*') == "seq(star(lit('a')), seq(star(lit('b')), star(lit('c'))))"
 
-  #     assert json_parse('{"age": 21, "state":"CO","occupation":"rides the rodeo"}') == (
-  #                       ['value', ['object', '{', ['members', ['pair', ['string', '"age"'],
-  #                        ':', ['value', ['number', ['int', '21']]]], ',', ['members',
-  #                       ['pair', ['string', '"state"'], ':', ['value', ['string', '"CO"']]],
-  #                       ',', ['members', ['pair', ['string', '"occupation"'], ':',
-  #                       ['value', ['string', '"rides the rodeo"']]]]]], '}']], '')
-  return 'tests pass'
+  # assert parse_re('[ab]*') == "star(oneof('ab'))"
+  # assert parse_re('a+(b+c+)') == "seq(plus(lit('a')), seq(plus(lit('b')), plus(lit('c'))))"
+  # assert parse_re('[bcfhrsm]at') == "seq(oneof('bcfhrsm'), lit('at'))"
+  # assert parse_re('(a|b)*c?') == "seq(star(alt(lit('a'), lit('b'))), opt(lit('c')))"
+  # assert parse_re('(a*)?') == "opt(star(lit('a')))"
+  # assert parse_re('abc.$') == "seq(lit('abc'), seq(oneof('?'), eol('$')))"
+  return "tests pass"
 
 
-print test()
+#print test()
+
+print test_convert()
