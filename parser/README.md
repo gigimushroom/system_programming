@@ -1,20 +1,47 @@
 # Pattern Matching Engine Overview
-Define context free grammar.
-Implement a LR parser
-Implement a pattern matching function, with a few lambda helpers.
+- Define context free grammar.
+- Implement a LR parser
+- Implement a pattern matching function, with a few lambda helpers.
 
-## How the search flow works
-Given pattern in string: `a*`, and a text to search.
+## How the pattern matcher works
+1. Given pattern in string: `'a*'`, and a text to search from. \
+Example: `match('a*', 'aaaaabbbaa')`
 
-Parse the pattern to API format (string).
-Example: `star(lit(‘a’))`
+2. Parse the pattern to API string format. \
+Example result: `'star(lit(‘a’))'`
 
-Call pattern matching:
-`eval` converts the string API format to actual functions.
+3. LR Parser supports 4 kinds of input:
+- expr
+- seq: expr expr ...
+- alternatives: seq | seq | ...
+- regex
 
-Use the provided compiled lambdas, like `alt`, `star`, `lit`, etc.
+```
+parse_atom(atom):
+  if atom in Grammar:
+    alternatives = G[atom]
+    for each alternative:
+      result = parse_seq(alternative)
+      return result if not None
+    if none of them matches, Fail
+  else:
+    do the regex matching
 
-Calculate results, find the smallest reminder, return the longest match words.
+parse_seq(seq):
+  results = []
+  for each atom in seq:
+    r = parse_atom(atom)
+    add r to results if not None
+  return results
+
+```
+
+4. Start pattern matching:
+- `eval` converts the API string format to actual functions.
+- Use the provided compiled lambdas, like `alt`, `star`, `lit`, etc.
+- Return a set of reminders from the matches.
+
+5. Among the reminders, find the smallest reminder, return the longest match word.
 
 
 ## Study Section 1

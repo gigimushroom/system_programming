@@ -1,12 +1,11 @@
 # ---------------
-# A Regex Engine
+# A Regular Expression Engine
 # ---------------
 
 from functools import update_wrapper
 from string import split
 import re
 import pprint as pp
-import sys
 
 
 def grammar(description, whitespace=r'\s*'):
@@ -36,10 +35,8 @@ def grammar(description, whitespace=r'\s*'):
 
 def decorator(d):
   "Make function d a decorator: d wraps a function fn."
-
   def _d(fn):
     return update_wrapper(d(fn), fn)
-
   update_wrapper(_d, d)
   return _d
 
@@ -265,22 +262,6 @@ eol = lambda t: set(['']) if t == '' else null
 def star(x): return lambda t: (set([t]) |
                                set(t2 for t1 in x(t) if t1 != t
                                    for t2 in star(x)(t1)))
-
-class APIs:
-  def lit(self, s): return lambda t: set([t[len(s):]]) if t.startswith(s) else null
-
-  def seq(x, y): return lambda t: set().union(*map(y, x(t)))
-
-  def alt(x, y): return lambda t: x(t) | y(t)
-
-  def oneof(chars): return lambda t: set([t[1:]]) if (t and t[0] in chars) else null
-
-  dot = lambda t: set([t[1:]]) if t else null
-  eol = lambda t: set(['']) if t == '' else null
-
-  def star(x): return lambda t: (set([t]) |
-                                 set(t2 for t1 in x(t) if t1 != t
-                                     for t2 in star(x)(t1)))
 
 null = frozenset([])
 
