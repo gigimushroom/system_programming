@@ -48,3 +48,31 @@ peter norvig 讲解python程序设计笔记
 ## L6 word game
 
 - 问题分步解决的方式
+
+
+
+# Finals
+
+## Bowling
+Similar to poker hands, split bowling scores to 10 hands. \
+Tackle each hand. \
+Handle spare, strike features. Handle last hand case.
+
+## Logic Puzzle
+Similar to zebra puzzle. Use generator + puzzle solving pattern. 
+
+### Challenges: 
+a) What to choose for permutation. In this case, it is dates. 
+
+b) There are some conditions related to dates, ex: Wednesday is not X. \
+Our `for loops` is only for names, items, jobs. Thus, we need to define dates enums:
+```
+dates_list = Monday, Tuesday, Wednesday, Thursday, Friday = (1, 2, 3, 4, 5)
+orderings = list(itertools.permutations(dates_list))
+```
+
+In this way, we can code the condition in: `Wednesday is not X`. \
+
+c) Ouput data needs some data transforming.
+
+
