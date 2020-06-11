@@ -50,8 +50,8 @@ Your task is to write the function poly and the following additional functions:
 They are described below; see the test_poly function for examples.
 """
 
-import operator
-
+from string import split
+import re
 
 def format_coefs(coefs):
   f_name = []
@@ -119,16 +119,16 @@ def test_poly():
   assert power(poly((1, 1)), 10).coefs == (1, 10, 45, 120, 210, 252, 210, 120, 45, 10, 1)
 
   assert deriv(p1).coefs == (20, 60)
-  # assert integral(poly((20, 60))).coefs == (0, 20, 30)
-  # p5 = poly((0, 1, 2, 3, 4, 5))
-  # assert same_name(p5.__name__, '5 * x**5 + 4 * x**4 + 3 * x**3 + 2 * x**2 + x')
-  # assert p5(1) == 15
-  # assert p5(2) == 258
-  # assert same_name(deriv(p5).__name__, '25 * x**4 + 16 * x**3 + 9 * x**2 + 4 * x + 1')
-  # assert deriv(p5)(1) == 55
-  # assert deriv(p5)(2) == 573
+  assert integral(poly((20, 60))).coefs == (0, 20, 30)
+  p5 = poly((0, 1, 2, 3, 4, 5))
+  assert same_name(p5.__name__, '5 * x**5 + 4 * x**4 + 3 * x**3 + 2 * x**2 + x')
+  assert p5(1) == 15
+  assert p5(2) == 258
+  assert same_name(deriv(p5).__name__, '25 * x**4 + 16 * x**3 + 9 * x**2 + 4 * x + 1')
+  assert deriv(p5)(1) == 55
+  assert deriv(p5)(2) == 573
 
-  print 'PASSED'
+  print 'Basic ploy tests PASSED!'
 
 
 def same_name(name1, name2):
@@ -220,7 +220,7 @@ def power(p, n):
 
 """
 If your calculus is rusty (or non-existant), here is a refresher:
-The deriviative of a polynomial term (c * x**n) is (c*n * x**(n-1)).
+The derivative of a polynomial term (c * x**n) is (c*n * x**(n-1)).
 The derivative of a sum is the sum of the derivatives.
 So the derivative of (30 * x**2 + 20 * x + 10) is (60 * x + 20).
 
@@ -232,15 +232,54 @@ to the function integral (withh default C=0).
 
 
 def deriv(p):
-  "Return the derivative of a function p (with respect to its argument)."
+  """Return the derivative of a function p (with respect to its argument)."""
+  def formula(x):
+    items = []
+    for i, c in enumerate(p.coefs):
+      # constant is skipped.
+      if i != 0:
+        items.append(c * i * x ** (i - 1))
+    return sum(items)
 
+  # Find deriv's coefs.
+  coefs = ()
+  for i, c in enumerate(p.coefs):
+    # constant is skipped.
+    if i != 0:
+      coefs += (c * i,)
+
+  formula.__name__ = format_coefs(coefs)
+  formula.coefs = tuple(coefs)
+  return formula
 
 def integral(p, C=0):
-  "Return the integral of a function p (with respect to its argument)."
+  """Return the integral of a function p (with respect to its argument)."""
+  # I decided to hack a bit, use divider to find integral number.
+  integral_num = 2 if p.coefs[-1] % 2 == 0 else 3
+
+  def formula(x):
+    items = [C]
+    for i, c in enumerate(p.coefs):
+      if i == 0:
+        items.append(c * x)
+      else:
+        items.append(c / integral_num * x ** (i + 1))
+    return sum(items)
+
+  # Find coefs.
+  coefs = [C]
+  for i, c in enumerate(p.coefs):
+    if i == 0:
+      coefs.append(c)
+    else:
+      coefs.append(c / integral_num)
+
+  formula.__name__ = format_coefs(coefs)
+  formula.coefs = tuple(coefs)
+  return formula
 
 
 test_poly()
-
 
 
 """
@@ -268,8 +307,170 @@ def test_poly1():
   assert (x + 1) * (x - 1) == x ** 2 - 1 == poly((-1, 0, 1))
 
 
+
+
+def grammar(description, whitespace=r'\s*'):
+    """Convert a description to a grammar.  Each line is a rule for a
+    non-terminal symbol; it looks like this:
+        Symbol =>  A1 A2 ... | B1 B2 ... | C1 C2 ...
+    where the right-hand side is one or more alternatives, separated by
+    the '|' sign.  Each alternative is a sequence of atoms, separated by
+    spaces.  An atom is either a symbol on some left-hand side, or it is
+    a regular expression that will be passed to re.match to match a token.
+    Notation for *, +, or ? not allowed in a rule alternative (but ok
+    within a token). Use '\' to continue long lines.  You must include spaces
+    or tabs around '=>' and '|'. That's within the grammar description itself.
+    The grammar that gets defined allows whitespace between tokens by default;
+    specify '' as the second argument to grammar() to disallow this (or supply
+    any regular expression to describe allowable whitespace between tokens)."""
+    G = {' ': whitespace}
+    description = description.replace('\t', ' ') # no tabs!
+    for line in split(description, '\n'):
+        if not line: continue
+        lhs, rhs = split(line, ' => ', 1)
+        alternatives = split(rhs, ' | ')
+        G[lhs] = tuple(map(split, alternatives))
+    #print G
+    return G
+
+def parse(start_symbol, text, grammar):
+  """Example call: parse('Exp', '3*x + b', G).
+  Returns a (tree, remainder) pair. If remainder is '', it parsed the whole
+  string. Failure iff remainder is None. This is a deterministic PEG parser,
+  so rule order (left-to-right) matters. Do 'E => T op E | T', putting the
+  longest parse first; don't do 'E => T | T op E'
+  Also, no left recursion allowed: don't do 'E => E op T'"""
+
+  tokenizer = grammar[' '] + '(%s)'
+
+  def parse_sequence(sequence, text):
+    result = []
+    for atom in sequence:
+      tree, text = parse_atom(atom, text)
+      if text is None: return Fail
+      result.append(tree)
+    #print 'seq result', result, text
+    return result, text
+
+  def parse_atom(atom, text):
+    if atom in grammar:  # Non-Terminal: tuple of alternatives
+      for alternative in grammar[atom]:
+        tree, rem = parse_sequence(alternative, text)
+        if rem is not None:
+          #print 'debug:', atom, tree, 'reminder', rem
+          return [atom] + tree, rem
+      return Fail
+    else:  # Terminal: match characters against start of text
+      m = re.match(tokenizer % atom, text)
+      return Fail if (not m) else (m.group(1), text[m.end():])
+
+  # Body of parse:
+  return parse_atom(start_symbol, text)
+
+
+Fail = (None, None)
+
+POLY_GRAMMAR = grammar("""
+seq => expr plus | expr
+expr => const times | const
+times => \* power
+const => -?[1-9][0-9]*
+power => x\*\*[0-9] | x
+plus => \+ seq
+""", whitespace='\s*')
+
+
+# CONVERTER
+# I decided to cheat a bit. I could have defined a set of APIS, and calculate the polynomial result,
+# but I want to re-use the functions I wrote above: poly(coefs)
+# So the job of converter is to parse the coefs out of the AST.
+
+def convert(tree):
+  #pp.pprint(tree)
+  # Preprocessing only once to remove () and ending ''.
+  if isinstance(tree, tuple):
+    tree = tree[0]
+
+  results = []
+  process_expr(tree, results)
+
+  results.reverse()
+
+  return [int(r) for r in results]
+
+
+def process_expr(tree, results):
+  if not tree: return
+  root = tree[0]
+  if root == 'seq':
+    process_expr(tree[1], results)
+    if len(tree) > 2:
+      process_expr(tree[2], results)
+  elif root == 'expr':
+    process_expr(tree[1], results)
+  elif root == 'const':
+    results.append(tree[1])
+  elif root == 'times':
+    return
+  elif root == 'plus':
+    process_expr(tree[2], results)
+  else:
+    print "un-handled key:", root
+
+  return None
+
+
+# The master call.
+def Poly(text):
+  AST = Poly_helper(text)
+  coefs = convert(AST)
+  return poly(coefs)
+
+def Poly_helper(text):
+  return parse('seq', text, POLY_GRAMMAR)
+
+
+def test_poly_parser():
+  assert Poly_helper('20 * x + 10') == (['seq', ['expr', ['const', '20'], ['times', '*', ['power', 'x']]], ['plus', '+', ['seq', ['expr', ['const', '10']]]]], '')
+
+  assert Poly_helper('30 * x**2 + 20 * x + 10') == (['seq', ['expr', ['const', '30'], ['times', '*', ['power', 'x**2']]],
+                                              ['plus', '+', ['seq', ['expr', ['const', '20'], ['times', '*', ['power', 'x']]],
+                                                             ['plus', '+', ['seq', ['expr', ['const', '10']]]]]]], '')
+  print 'Parser Test Passed'
+
+def test_converter():
+  assert convert(Poly_helper('20 * x + 10')) == [10, 20]
+  assert convert(Poly_helper('30 * x**2 + 20 * x + 10')) == [10, 20, 30]
+
+  print "Converter passed"
+
 def test_poly2():
+  test_poly_parser()
+  test_converter()
+
+  p1 = poly((10, 20, 30))
   newp1 = Poly('30 * x**2 + 20 * x + 10')
   assert p1(100) == newp1(100)
   assert same_name(p1.__name__, newp1.__name__)
 
+  assert add(poly((10, 20, 30)), poly((1, 2, 3))).coefs == (11, 22, 33)
+  assert add(Poly('30 * x**2 + 20 * x + 10'), Poly('3 * x**2 + 2 * x + 1')).coefs == (11, 22, 33)
+
+  print "poly2 challenge passed!"
+
+test_poly2()
+
+
+
+"""
+https://stackoverflow.com/questions/5413158/multiplying-polynomials-in-python
+
+Multiplying polynomials in python
+s1 = [1,5,2]
+s2 = [6,1,4,3]
+res = [0]*(len(s1)+len(s2)-1)  # TOTAL LENGTH
+for o1,i1 in enumerate(s1):
+    for o2,i2 in enumerate(s2):
+        res[o1+o2] += i1*i2
+
+"""
