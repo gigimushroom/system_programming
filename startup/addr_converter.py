@@ -27,7 +27,7 @@ def addr_transform(loc):
     
     return prov[0], city[0], area[0]
     
-def parse_addrs_to_unique(dup_l, db_name='addr.json'):
+def parse_addrs_to_unique(dup_l, db_name='db/addr.json'):
     # parse json to dict
     db = None
     with open(db_name) as f:
@@ -124,7 +124,7 @@ def parse_addrs_to_unique(dup_l, db_name='addr.json'):
 # Run the monster!
 pd.options.display.max_rows = 999
 
-def run(file_name):
+def run(file_name, write=False):
     if not file_name or not os.path.isfile(file_name):
         return False
     
@@ -146,13 +146,14 @@ def run(file_name):
     for addr, num in results:
         addr_col_data.append(addr)
         num_col_data.append(num)
-        
-    base = pd.read_excel(file_name, sheet_name='Input', header=None)
-    base['替换地址'] = pd.Series(addr_col_data)
-    base['替换电话'] = pd.Series(num_col_data)
-    base.to_excel('haha.xls', index=False)
     
-    return True
+    if write:
+        base = pd.read_excel(file_name, sheet_name='Input', header=None)
+        base['替换地址'] = pd.Series(addr_col_data)
+        base['替换电话'] = pd.Series(num_col_data)
+        base.to_excel('haha.xls', index=False)
+    
+    return addr_col_data, num_col_data
 
 # run('bbb.xlsm')
 
