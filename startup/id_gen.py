@@ -6,7 +6,7 @@ import json
 import codecs
 
 
-df = pd.read_table("db/id_db.csv")
+df = pd.read_table("id_list2.csv")
 lines = df.values
         
 addr_d = {}
@@ -16,5 +16,5 @@ for l in lines:
         
 print(json.dumps(addr_d, ensure_ascii=False))
 
-with open('id_db.json', 'w', encoding='utf-8') as f:
+with open('id_db2.json', 'w', encoding='utf-8') as f:
     json.dump(addr_d, f, ensure_ascii=False, indent=4)
