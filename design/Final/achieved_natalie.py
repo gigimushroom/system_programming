@@ -56,9 +56,17 @@ import itertools
 def prefixes(word):
   """A list of the initial sequences of a word, including the complete word."""
   l = [word[:i] for i in range(len(word))]
-  l = [c for c in l if c != '']
   l.append(word)
   return set(l)
+
+def readwordlist(filename):
+  file = open(filename)
+  text = file.read().upper()
+  wordset = set(word for word in text.splitlines())
+  prefixset = set(p for word in wordset for p in prefixes(word))
+  return wordset, prefixset
+
+WORDS, PREFIXES = readwordlist('words4k.txt')
 
 def suffixes(word):
   """Including the complete word."""
@@ -67,26 +75,18 @@ def suffixes(word):
   l.append(word)
   return set(l)
 
-def calc_score(start, mid, end):
-  total_len = len(start + mid + end)
-  id_s, id_m, id_e = total_len / 4, total_len / 2, total_len / 4
-  score = total_len - abs(id_s-len(start)) - abs(id_m-len(mid)) - abs(id_e-len(end))
-  return score
-
-def find_natalie_words(w1, w2):
-  # each result is a tuple: (combined_word, score)
+def find_common_words(w1, w2):
   results = []
-  w1_suffixes = suffixes(w1)
-  w2_prefixes = prefixes(w2)
-
-  for s in w1_suffixes:
-    if s in w2_prefixes:
-      # Found a match
-      start, mid, end = w1[:len(w1) - len(s)], s, w2[len(s):]
-      score = calc_score(start, mid, end)
-      results.append((start + mid + end, score))
+  w1_prefixes = prefixes(w1)
+  w2_suffixes = suffixes(w2)
+  combs = itertools.product(w1_prefixes, w2_suffixes)
+  for a, b in combs:
+    c = a + b
+    if c.upper() in WORDS:
+      results.append(c)
 
   return results
+
 
 def natalie(words):
   """Find the best Portmanteau word formed from any two of the list of words."""
@@ -95,36 +95,34 @@ def natalie(words):
   results = []
   for w1, w2 in combs:
     # we need to check (w1, w2), as well as (w2, w1)
-    results.extend(find_natalie_words(w1, w2))
-    results.extend(find_natalie_words(w2, w1))
+    results.extend(find_common_words(w1, w2))
+    results.extend(find_common_words(w2, w1))
 
-  # Skip the whole word matching cases.
-  results = [r for r in results if r[0] not in words]
   if not results: return None
-  print results
-  res = max(results, key=lambda p: p[1])
+
+  res = max(results, key=len)
+  if res in words: return None
 
   print res
-  return res[0]
+  return res
 
 def test_natalie():
-  """Some test cases for natalie"""
-  assert natalie(['adolescent', 'scented', 'centennial', 'always', 'ado']) in ('adolescented', 'adolescentennial')
-  assert natalie(['eskimo', 'escort', 'kimchee', 'kimono', 'cheese']) == 'eskimono'
+  "Some test cases for natalie"
+  assert natalie(['adolescent', 'scented', 'centennial', 'always', 'ado']) in ('adolescented','adolescentennial')
+  assert natalie(['eskimo', 'escort', 'kimchee', 'kimono', 'cheese']) == 'kimcheese'
   assert natalie(['kimono', 'kimchee', 'cheese', 'serious', 'us', 'usage']) == 'kimcheese'
   assert natalie(['circus', 'elephant', 'lion', 'opera', 'phantom']) == 'elephantom'
-  assert natalie(['programmer', 'coder', 'partying', 'merrymaking']) == 'programmerrymaking'
-  assert natalie(['int', 'intimate', 'hinter', 'hint', 'winter']) == 'hintimate'
-  assert natalie(['morass', 'moral', 'assassination']) == 'morassassination'
-  assert natalie(['entrepreneur', 'academic', 'doctor', 'neuropsychologist', 'neurotoxin', 'scientist', 'gist']) in (
-  'entrepreneuropsychologist', 'entrepreneurotoxin')
+  # assert natalie(['programmer', 'coder', 'partying', 'merrymaking']) == 'programmerrymaking'
+  # assert natalie(['int', 'intimate', 'hinter', 'hint', 'winter']) == 'hintimate'
+  # assert natalie(['morass', 'moral', 'assassination']) == 'morassassination'
+  # assert natalie(['entrepreneur', 'academic', 'doctor', 'neuropsychologist', 'neurotoxin', 'scientist', 'gist']) in ('entrepreneuropsychologist', 'entrepreneurotoxin')
   assert natalie(['perspicacity', 'cityslicker', 'capability', 'capable']) == 'perspicacityslicker'
   assert natalie(['backfire', 'fireproof', 'backflow', 'flowchart', 'background', 'groundhog']) == 'backgroundhog'
   assert natalie(['streaker', 'nudist', 'hippie', 'protestor', 'disturbance', 'cops']) == 'nudisturbance'
   assert natalie(['night', 'day']) == None
   assert natalie(['dog', 'dogs']) == None
   assert natalie(['test']) == None
-  assert natalie(['']) == None
+  assert natalie(['']) ==  None
   assert natalie(['ABC', '123']) == None
   assert natalie([]) == None
   return 'tests pass'

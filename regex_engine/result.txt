@@ -1,0 +1,107 @@
+/usr/local/bin/python2.7 /Users/xiayingpeng/Desktop/code/system_programming/parser/parser.py
+{' ': '\\s*',
+ 'RE': (['seq', 'RE'], ['seq']),
+ 'alt': (['[(]', 'unit', '[|]', 'unit', '[)]'],),
+ 'dot': (['[.]'],),
+ 'eol': (['[$]'],),
+ 'lit': (['\\w+'],),
+ 'oneof': (['[[]', 'lit', '[]]'],),
+ 'opt': (['unit', '[?]'],),
+ 'plus': (['unit', '[+]'],),
+ 'seq': (['star'],
+         ['plus'],
+         ['opt'],
+         ['alt'],
+         ['oneof'],
+         ['lit'],
+         ['dot'],
+         ['eol']),
+ 'star': (['unit', '[*]'],),
+ 'unit': (['alt'], ['oneof'], ['lit'], ['dot'], ['eol'])}
+['seq', 'RE'] a*b*c*
+debug: ['\\w+'] lit ['a']
+debug: ['lit'] unit [['lit', 'a']]
+debug: ['unit', '[*]'] star [['unit', ['lit', 'a']], '*']
+debug: ['star'] seq [['star', ['unit', ['lit', 'a']], '*']]
+['seq', 'RE'] b*c*
+debug: ['\\w+'] lit ['b']
+debug: ['lit'] unit [['lit', 'b']]
+debug: ['unit', '[*]'] star [['unit', ['lit', 'b']], '*']
+debug: ['star'] seq [['star', ['unit', ['lit', 'b']], '*']]
+['seq', 'RE'] c*
+debug: ['\\w+'] lit ['c']
+debug: ['lit'] unit [['lit', 'c']]
+debug: ['unit', '[*]'] star [['unit', ['lit', 'c']], '*']
+debug: ['star'] seq [['star', ['unit', ['lit', 'c']], '*']]
+['seq', 'RE']
+['seq']
+['seq'] c*
+debug: ['\\w+'] lit ['c']
+debug: ['lit'] unit [['lit', 'c']]
+debug: ['unit', '[*]'] star [['unit', ['lit', 'c']], '*']
+debug: ['star'] seq [['star', ['unit', ['lit', 'c']], '*']]
+debug: ['seq'] RE [['seq', ['star', ['unit', ['lit', 'c']], '*']]]
+debug: ['seq', 'RE'] RE [['seq', ['star', ['unit', ['lit', 'b']], '*']], ['RE', ['seq', ['star', ['unit', ['lit', 'c']], '*']]]]
+debug: ['seq', 'RE'] RE [['seq', ['star', ['unit', ['lit', 'a']], '*']], ['RE', ['seq', ['star', ['unit', ['lit', 'b']], '*']], ['RE', ['seq', ['star', ['unit', ['lit', 'c']], '*']]]]]
+ok
+(['RE',
+  ['seq', ['star', ['unit', ['lit', 'a']], '*']],
+  ['RE',
+   ['seq', ['star', ['unit', ['lit', 'b']], '*']],
+   ['RE', ['seq', ['star', ['unit', ['lit', 'c']], '*']]]]],
+ '')
+tests pass
+
+Process finished with exit code 0
+
+
+['RE', ['expr', ['lit', 'hello']]]
+
+
+
+
+['RE',
+  ['expr', ['star', ['unit', ['lit', 'a']], '*']],
+  ['RE',
+   ['expr', ['star', ['unit', ['lit', 'b']], '*']],
+   ['RE', ['expr', ['star', ['unit', ['lit', 'c']], '*']]]
+  ]
+]
+
+
+
+(['RE', ['expr', ['star', ['unit', ['oneof', '[', ['lit', 'ab'], ']']], '*']]],
+ '')
+star(oneof('ab'))
+
+
+['RE',
+ ['expr',
+  ['group',
+   '(',
+   ['RE',
+    ['expr', ['plus', ['unit', ['lit', 'b']], '+']],
+    ['RE', ['expr', ['plus', ['unit', ['lit', 'c']], '+']]]],
+   ')'
+   ]
+  ]
+ ]
+
+
+['RE',
+  ['expr', ['oneof', '[', ['lit', 'bcfhrsm'], ']']],
+  ['RE', ['expr', ['lit', 'at']]]]
+
+['RE',
+  ['expr',
+   ['star',
+    ['unit',
+     ['alt',
+      '(',
+      ['unit', ['lit', 'a']],
+      '|',
+      ['unit', ['lit', 'b']],
+      ')']],
+    '*']],
+  ['RE', ['expr', ['opt', ['unit', ['lit', 'c']], '?']]]
+ ]
