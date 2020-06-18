@@ -3,16 +3,15 @@
 - Implement a LR parser
 - Implement a pattern matching function, with a few lambda helpers.
 
-## How the pattern matcher works
-### Input
+# How the pattern matcher works
+## Input
 Given pattern in string: `'a*'`, and a text to search from. \
 Example: `match('a*', 'aaaaabbbaa')`
 
-### Parsing
-Parse the pattern to API string format. \
-Example result: `'star(lit(‘a’))'`
+## Parsing to AST
+Result: `['star'] seq [['star', ['unit', ['lit', 'b']], '*']]`
 
-#### LR Parser supports 4 kinds of input
+### LR Parser supports 4 kinds of input
 - expr
 - seq: expr expr ...
 - alternatives: seq | seq | ...
@@ -40,17 +39,16 @@ parse_seq(seq):
 
 ```
 
-#### Parser has 2 part:
-- Defined above, parsing the input to AST.
-- Convert the tree to the regex API format in string.
+## Converter
+Convert the AST to API string format. \
+Example result: `'star(lit(‘a’))'`
 
-
-### Start pattern matching
+## Start pattern matching
 - `eval` converts the API string format to actual functions.
 - Use the provided compiled lambdas, like `alt`, `star`, `lit`, etc.
 - Return a set of reminders from the matches.
 
-### Pick result
+## Pick result
 Among the reminders, find the smallest reminder, return the longest match word.
 
 
