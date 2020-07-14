@@ -18,7 +18,7 @@
   @temp
   D=M // D = i
   @8192
-  D=D-A // D = i - 32
+  D=D-A // D = i - 8192
   @FINISHCLEANUP
   D;JGE // if i - R1 >= 0, go to FINISH CLEANUP
 
