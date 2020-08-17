@@ -171,6 +171,18 @@ class CodeWriter:
         '@%s' % pos,
         'D=M',
       ]
+    elif segment == 'pointer':
+      ptr = 'THIS' if int(index) == 0 else 'THAT'
+      codes = [
+        '@%s' % ptr,
+        'D=M',
+      ]
+    elif segment == 'static':
+      sym = 'Xxx.%s' % index
+      codes = [
+        '@%s' % sym,
+        'D=M',
+      ]
     else:
       reg = self._get_reg_name_from_segment(segment)
       codes = [
@@ -207,6 +219,31 @@ class CodeWriter:
         '@%s' % pos,
         'D=A',
       ]
+    elif segment == 'pointer':
+      # Pointer case is special. It only modify THIS or That register.
+      ptr = 'THIS' if int(index) == 0 else 'THAT'
+      codes = POP_PREFIX
+      contents = [
+        '// Modify %s pointer' % ptr,
+        '@%s' % ptr,
+        'M=D',
+        '\n',
+      ]
+      codes.extend(contents)
+      return codes
+    elif segment == 'static':
+      # Save content from Reg D to correct Register symbol.
+      sym = 'Xxx.%s' % index
+      codes = POP_PREFIX
+      contents = [
+        '// Modify %s static value' % sym,
+        '@%s' % sym,
+        'M=D',
+        '\n',
+      ]
+      codes.extend(contents)
+      return codes
+
     else:
       reg = self._get_reg_name_from_segment(segment)
       contents = [
@@ -217,11 +254,13 @@ class CodeWriter:
         'D=D+A',
       ]
     
+    # We want to transfer the data from top in stack, to memory segment
+    # correct location. We have to use some registers for help.
     POP_SUFFIX = [
       '// Store %s ptr to Reg 14' % segment,
       '@14',
       'M=D',
-      '// Load stored value, set A to correct local pointer',
+      '// Load stored value, set A to correct segment pointer',
       '@13',
       'D=M',
       '@14',
@@ -327,4 +366,23 @@ def test_push_pop_temp():
   cw.writePushPop('push', 'constant', 33, debug=True)
   cw.writePushPop('push', 'temp', 1, debug=True)
 
-test_push_pop_temp()
+def test_pop_pointer():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 3030, debug=True)
+  cw.writePushPop('pop', 'pointer', 0, debug=True)
+
+def test_pop_pointer2():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 3030, debug=True)
+  cw.writePushPop('pop', 'pointer', 0, debug=True)
+  cw.writePushPop('push', 'constant', 66, debug=True)
+  cw.writePushPop('push', 'pointer', 0, debug=True)
+
+def test_push_pop_static():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 111, debug=True)
+  cw.writePushPop('pop', 'static', 8, debug=True)
+  cw.writePushPop('push', 'constant', 888, debug=True)
+  cw.writePushPop('push', 'static', 8, debug=True)
+
+#test_push_pop_static()
