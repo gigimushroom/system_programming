@@ -30,6 +30,9 @@ FIND_2ND_VALUE_IN_STACK = [
   'A=A-1',
 ]
 
+TEMP_REG_START_INDEX = 5
+
+
 """
       |x|
       |y|       
@@ -86,7 +89,6 @@ class CodeWriter:
     ])
     return ops
   
-
   def writeArithmetic(self, cmd, debug=False):
     codes = []
     ops = []
@@ -129,22 +131,116 @@ class CodeWriter:
       self.f.write('// %s \n' % cmd)
       self.f.write('\n'.join(codes))
 
-  def writePushPop(self, cmd, segment, index, debug=False):
-    codes = []
+  def _get_reg_name_from_segment(self, segment):
+    if segment == 'local':
+      reg = 'LCL'
+    elif segment == 'argument':
+      reg = 'ARG'
+    elif segment == 'this':
+      reg = 'THIS'
+    elif segment == 'that':
+      reg = 'THAT'
+    else:
+      reg = None
+    
+    return reg
 
+  def _gen_push_cmd(self, segment, index):
+    register = None
+    codes = None
+
+    suffix_push_to_sp = [
+      '@SP',
+      'M=M+1',
+      'A=M-1',
+      'M=D',
+      '\n',
+    ]
+
+    # We store the value we want to push to Register D.
     if segment == 'constant':
-      addr = '@%s' % index
       codes = [
-        addr,
+        '@%s' % index,
         'D=A',
-        '@SP',
-        'M=M+1',
-        'A=M-1',
-        'M=D',
-        '\n',
+      ]
+    elif segment == 'temp':
+      # TEMP segment holds values from Reg[5 - 12]
+      # To get 6th, we need to: 5 + 6
+      pos = TEMP_REG_START_INDEX + int(index)
+      codes = [
+        '@%s' % pos,
+        'D=M',
       ]
     else:
-      print('Segment not supported', segment)
+      reg = self._get_reg_name_from_segment(segment)
+      codes = [
+        '// Get (%s base + ith) pointer address' % reg,
+        '@%s' % reg,
+        'D=M',
+        '@%s' % index,
+        'A=D+A',
+        '// Save value to Reg D',
+        'D=M',
+      ]
+
+    codes.extend(suffix_push_to_sp)
+
+    return codes
+
+  def _gen_pop_cmd(self, segment, index):
+    POP_PREFIX = [
+      '// Save top value in stack to Reg 13',
+      '@SP',
+      'A=M-1',
+      'D=M',
+      '@13',
+      'M=D ',
+      '// Fix stack ptr.',
+      '@SP',
+      'M=M-1',
+    ]
+
+    if segment == 'temp':
+      pos = TEMP_REG_START_INDEX + int(index)
+      contents = [
+        '// Save TEMP memory segment pos(%s) to Reg D' % index,
+        '@%s' % pos,
+        'D=A',
+      ]
+    else:
+      reg = self._get_reg_name_from_segment(segment)
+      contents = [
+        '// Save (%s base + ith) address to Reg D' % segment,
+        '@%s' % reg,
+        'D=M',
+        '@%s' % index,
+        'D=D+A',
+      ]
+    
+    POP_SUFFIX = [
+      '// Store %s ptr to Reg 14' % segment,
+      '@14',
+      'M=D',
+      '// Load stored value, set A to correct local pointer',
+      '@13',
+      'D=M',
+      '@14',
+      'A=M',
+      '// Pop from stack to memory segment %s is done.' % segment,
+      'M=D',
+    ]
+    
+    codes = POP_PREFIX
+    codes.extend(contents)
+    codes.extend(POP_SUFFIX)
+    
+    return codes
+
+  def writePushPop(self, cmd, segment, index, debug=False):
+    if cmd == 'push':
+      codes = self._gen_push_cmd(segment, index)
+    else:
+      codes = self._gen_pop_cmd(segment, index)
 
     if debug:
       print('\n'.join(codes))
@@ -205,4 +301,30 @@ def test_writer_eq3():
   cw.writeArithmetic('eq', debug=True)
   cw.close()
 
-test_writer_eq3()
+def test_writer_pop_local():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 10, debug=True)
+  cw.writePushPop('pop', 'local', 0, debug=True)
+
+def test_writer_pop_args():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 21, debug=True)
+  cw.writePushPop('push', 'constant', 22, debug=True)
+  cw.writePushPop('pop', 'argument', 2, debug=True)
+  cw.writePushPop('pop', 'argument', 1, debug=True)
+
+def test_push_local():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 99, debug=True)
+  cw.writePushPop('pop', 'local', 1, debug=True)
+  cw.writePushPop('push', 'constant', 33, debug=True)
+  cw.writePushPop('push', 'local', 1, debug=True)
+
+def test_push_pop_temp():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 66, debug=True)
+  cw.writePushPop('pop', 'temp', 1, debug=True)
+  cw.writePushPop('push', 'constant', 33, debug=True)
+  cw.writePushPop('push', 'temp', 1, debug=True)
+
+test_push_pop_temp()

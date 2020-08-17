@@ -40,6 +40,8 @@ class Parser:
 
     if self.cmds[0] == C_PUSH:
       return C_PUSH
+    if self.cmds[0] == C_POP:
+      return C_POP 
     elif self.cmds[0] in C_ARITHMETIC:
       return self.cmds[0]
 
@@ -68,7 +70,7 @@ cw = code_writer.CodeWriter(output)
 
 while parser.hasMoreCommands():
   parser.advance()
-
+  print(parser.cmds)
   cmd_type = parser.commandType()
   if cmd_type in [C_PUSH, C_POP]:
     print(cmd_type, parser.arg1(), parser.arg2()) 
