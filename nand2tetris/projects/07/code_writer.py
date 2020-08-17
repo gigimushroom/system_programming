@@ -73,7 +73,7 @@ class CodeWriter:
       '@LABEL_%d  // a location' % label,
       'D;%s // jump if satified comp' %op,
     ]
-    # Set 2nd Value in Stack to -1 if not equal.
+    # Set 2nd Value in Stack to 0 if not equal.
     ops.extend(FIND_2ND_VALUE_IN_STACK)
     ops.extend([
       'M=0 // set to 0 if False',
@@ -81,7 +81,7 @@ class CodeWriter:
       '0;JMP',
       '(LABEL_%d)' % label,
     ])
-    # Set 2nd Value in Stack to 1 if equals.
+    # Set 2nd Value in Stack to 0xffff(-1) if equals.
     ops.extend(FIND_2ND_VALUE_IN_STACK)
     ops.extend([
       'M=-1  // set to 0xffff if True',
