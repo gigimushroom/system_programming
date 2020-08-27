@@ -1,6 +1,8 @@
 import sys
 import code_writer
 import os
+from os import listdir
+from os.path import isfile, join
 
 
 C_PUSH = 'push'
@@ -12,7 +14,7 @@ C_GOTO = 'goto'
 C_IF = 'if-goto'
 C_FUNCTION  = 'function'
 C_RETURN = 'return'
-C_CALL = 'call '
+C_CALL = 'call'
 
 
 class Parser:
@@ -71,45 +73,62 @@ class Parser:
     return self.cmds[2]
 
 
+def parse_a_file(file_name, cw):
+  parser = Parser(file_name)
+  while parser.hasMoreCommands():
+    parser.advance()
+    #print('...', parser.cmds)
+    cmd_type = parser.commandType()
+    if cmd_type in [C_PUSH, C_POP]:
+      #print(cmd_type, parser.arg1(), parser.arg2()) 
+      cw.writePushPop(cmd_type, parser.arg1(), parser.arg2())
+
+    elif cmd_type in C_ARITHMETIC:
+      #print(parser.arg1())
+      cw.writeArithmetic(parser.arg1())
+
+    elif cmd_type == C_LABEL:
+      print('Writing label:', parser.arg1())
+      cw.writeLabel(parser.arg1())
+
+    elif cmd_type == C_IF:
+      print('Writing if-goto:', parser.arg1())
+      cw.writeIf(parser.arg1())
+    
+    elif cmd_type == C_GOTO:
+      print('Writing goto:', parser.arg1())
+      cw.writeGoto(parser.arg1())
+
+    elif cmd_type == C_FUNCTION:
+      print('Writing function:', parser.arg1(), parser.arg2())
+      cw.writeFunction(parser.arg1(), parser.arg2())
+
+    elif cmd_type == C_CALL:
+      print('Writing Call:', parser.arg1(), parser.arg2())
+      cw.writeCall(parser.arg1(), parser.arg2())
+
+    elif cmd_type == C_RETURN:
+      print('Writing return')
+      cw.writeReturn()
 
 file_name = sys.argv[1]
-parser = Parser(file_name)
+if os.path.isfile(file_name):
+  output = '%s.asm' % os.path.splitext(file_name)[0]
+  cw = code_writer.CodeWriter(output)
+  cw.set_input_f_name(file_name)
+  parse_a_file(file_name, cw)
 
-#output = sys.argv[2]
-output = '%s.asm' % os.path.splitext(file_name)[0]
-print('saving to', output)
-cw = code_writer.CodeWriter(output)
+else:
+  dir_name = sys.argv[1]
+  # Get last part of dirtectory name. Example: a/b => b
+  output = '%s.asm' % os.path.basename(dir_name)
+  print(dir_name, output) 
+  cw = code_writer.CodeWriter(join(dir_name, output))
+  cw.writeInit()
 
-while parser.hasMoreCommands():
-  parser.advance()
-  #print('...', parser.cmds)
-  cmd_type = parser.commandType()
-  if cmd_type in [C_PUSH, C_POP]:
-    #print(cmd_type, parser.arg1(), parser.arg2()) 
-    cw.writePushPop(cmd_type, parser.arg1(), parser.arg2())
-
-  elif cmd_type in C_ARITHMETIC:
-    #print(parser.arg1())
-    cw.writeArithmetic(parser.arg1())
-
-  elif cmd_type == C_LABEL:
-    print('Writing label:', parser.arg1())
-    cw.writeLabel(parser.arg1())
-
-  elif cmd_type == C_IF:
-    print('Writing if-goto:', parser.arg1())
-    cw.writeIf(parser.arg1())
-  
-  elif cmd_type == C_GOTO:
-    print('Writing goto:', parser.arg1())
-    cw.writeGoto(parser.arg1())
-
-  elif cmd_type == C_FUNCTION:
-    print('Writing function:', parser.arg1(), parser.arg2())
-    cw.writeFunction(parser.arg1(), parser.arg2())
-
-  elif cmd_type == C_RETURN:
-    print('Writing return')
-    cw.writeReturn()
+  for f in listdir(dir_name):
+    if isfile(join(dir_name, f)) and f.endswith('.vm'):
+      cw.set_input_f_name(f)
+      parse_a_file(join(dir_name, f), cw)
 
 cw.close()

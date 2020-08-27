@@ -1,4 +1,6 @@
 import sys
+import os
+
 
 BINARY_CMD_PREFIX = [
   '@SP',
@@ -62,10 +64,31 @@ lt => x < y => 892 < 891 => False
 
 """
 
+PUSH_VAL_FROM_D_TO_STACK = [
+  '// Save value from D to stack',
+  '@SP',
+  'M=M+1',
+  'A=M-1',
+  'M=D',
+  '\n',
+]
+
+def _count_line_of_code(codes):
+  sum = 0
+  for c in codes:
+    if c and c != '\n' and not c.startswith('//') and not c.startswith('('):
+      sum += 1
+  return sum
+
 class CodeWriter:
   def __init__(self, file_name):
     self.f = open(file_name, 'w')
     self.label_start_index = -1
+    self.writtens = 0
+
+  def set_input_f_name(self, input):
+    # Used for generating static variable names.
+    self.input_vm = os.path.splitext(input)[0]
 
   def _get_next_label(self):
     self.label_start_index += 1
@@ -99,6 +122,16 @@ class CodeWriter:
     ])
     return ops
   
+  def _file_write(self, codes, debug=False):
+    if debug:
+      print('\n'.join(codes))
+    else:
+      self.f.write('\n'.join(codes))
+
+    self.writtens += _count_line_of_code(codes)
+
+    print('Number of lines:', self.writtens)
+
   def writeArithmetic(self, cmd, debug=False):
     codes = []
     ops = []
@@ -135,12 +168,9 @@ class CodeWriter:
       codes.extend(ops)
       codes.extend(UNARY_CMD_SUFFIX)
 
-    if debug:
-      print('\n'.join(codes))
-    else:
-      self.f.write('// %s \n' % cmd)
-      self.f.write('\n'.join(codes))
-
+    self._file_write(['// %s\n' % cmd], debug)
+    self._file_write(codes, debug)
+    
   def _get_reg_name_from_segment(self, segment):
     if segment == 'local':
       reg = 'LCL'
@@ -158,14 +188,6 @@ class CodeWriter:
   def _gen_push_cmd(self, segment, index):
     register = None
     codes = None
-
-    suffix_push_to_sp = [
-      '@SP',
-      'M=M+1',
-      'A=M-1',
-      'M=D',
-      '\n',
-    ]
 
     # We store the value we want to push to Register D.
     if segment == 'constant':
@@ -188,7 +210,7 @@ class CodeWriter:
         'D=M',
       ]
     elif segment == 'static':
-      sym = 'Xxx.%s' % index
+      sym = '%s.%s' % (self.input_vm, index)
       codes = [
         '@%s' % sym,
         'D=M',
@@ -205,7 +227,7 @@ class CodeWriter:
         'D=M',
       ]
 
-    codes.extend(suffix_push_to_sp)
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
 
     return codes
 
@@ -243,7 +265,7 @@ class CodeWriter:
       return codes
     elif segment == 'static':
       # Save content from Reg D to correct Register symbol.
-      sym = 'Xxx.%s' % index
+      sym = '%s.%s' % (self.input_vm, index)
       codes = POP_PREFIX
       contents = [
         '// Modify %s static value' % sym,
@@ -292,38 +314,29 @@ class CodeWriter:
     else:
       codes = self._gen_pop_cmd(segment, index)
 
-    if debug:
-      print('\n'.join(codes))
-    else:
-      self.f.write('// %s %s %s\n' % (cmd, segment, index))
-      self.f.write('\n'.join(codes))
+    self._file_write(['// %s %s %s\n' % (cmd, segment, index)], debug)
+    self._file_write(codes, debug)
 
   def close(self):
-    self.f.write('(END)\n')
-    self.f.write('@END\n')
-    self.f.write('0;JMP\n')
+    self._file_write(['(END)\n'])
+    self._file_write(['@END\n'])
+    self._file_write(['0;JMP\n'])
     
     self.f.close()
-
-  def writeInit(self):
-    pass
 
   def writeLabel(self, label, debug=False):
     cmd = '(%s)\n' % label
 
-    if debug:
-      print(cmd)
-    else:
-      self.f.write(cmd)
+    self._file_write([cmd], debug)
 
-  def writeGoto(self, label):
+  def writeGoto(self, label, debug=False):
     codes = [
       '@%s' % label,
       '0; JMP',
       '\n',
     ]
 
-    self.f.write('\n'.join(codes))
+    self._file_write(codes, debug)
 
   def writeIf(self, label, debug=False):
     codes = POP_TOP_MOST_FROM_STACK
@@ -333,13 +346,90 @@ class CodeWriter:
       '\n',
     ])
 
-    if debug:
-      print('\n'.join(codes))
-    else:
-      self.f.write('\n'.join(codes))
+    self._file_write(codes, debug=debug)
 
-  def writeCall(self):
-    pass
+  def writeCall(self, func_name, num_of_args, debug=False):
+    codes = []
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
+
+    codes.extend([
+      '// Push LCL',
+      '@LCL',
+      'D=M',
+    ])
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
+
+    codes.extend([
+      '// Push ARG',
+      '@ARG',
+      'D=M',
+    ])
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
+
+    codes.extend([
+      '// Push THIS',
+      '@THIS',
+      'D=M',
+    ])
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
+
+    codes.extend([
+      '// Push THAT',
+      '@THAT',
+      'D=M',
+    ])
+    codes.extend(PUSH_VAL_FROM_D_TO_STACK)
+
+    codes.extend([
+      '// ARG = SP - %s - 5' % num_of_args,
+      '@SP',
+      'D=M-1',
+    ])
+    max_pos = int(num_of_args) + 5 - 1
+    for _ in range(max_pos):
+      codes.append('D=D-1')
+
+    codes.extend([
+      '@ARG',
+      'M=D',
+      '// ends with re-pos ARG.'
+    ])
+
+    codes.extend([
+      '// LCL = SP',
+      '@SP',
+      'D=M',
+      '@LCL',
+      'M=D'
+    ])    
+
+    # We have to calculate the number of lines here, since we want to know it
+    # when writting labels.
+    # Plus 2 because we have to insert the prefix cmds to the beginning of the list.
+    lines = _count_line_of_code(codes) + 2 + self.writtens
+    # Plus 2 for the go to func cmds below.
+    # (LABEL) does not count.
+    ret_addr_pos = lines + 2
+
+    codes.extend([
+      '// Go to function(%s)' % func_name,
+      '@%s' % func_name,
+      '0; JMP',
+      '// Declare a label for return address. It is current lines no. %s!' % ret_addr_pos,
+      '(%s)' % ret_addr_pos,
+      '\n',
+    ])
+
+    prefix = [
+      '// Push return address %s' % ret_addr_pos,
+      '// Use the memory location of the command following the function call',
+      '@%s' % ret_addr_pos,
+      'D=A',
+    ]
+    codes = prefix + codes
+
+    self._file_write(codes, debug)
+    
 
   def writeReturn(self, debug=False):
     """ The key of return is to reset to beginning.
@@ -453,10 +543,7 @@ class CodeWriter:
       '\n',
     ])
 
-    if debug:
-      print('\n'.join(codes))
-    else:
-      self.f.write('\n'.join(codes))
+    self._file_write(codes, debug)
 
   def writeFunction(self, func_name, num_of_locals, debug=False):
     self.writeLabel(func_name, debug=debug)
@@ -464,7 +551,42 @@ class CodeWriter:
     for i in range(int(num_of_locals)):
       self.writePushPop('push', 'constant', 0, debug=debug)
 
+  def writeInit(self, debug=False):
+    codes = [
+      '// Set CP to 256',
+      '@256',
+      'D=A',
+      '@SP',
+      'M=D',
 
+      '// Set LCL to -1',
+      '@LCL',
+      'M=-1',
+      '// Set ARG to -2',
+      '@ARG',
+      'M=-1',
+      'M=M-1',
+      
+      '// Set THIS to -3',
+      '@THIS',
+      'M=-1',
+      'M=M-1',
+      'M=M-1',
+      '// Set THAT to -4',
+      '@THAT',
+      'M=-1',
+      'M=M-1',
+      'M=M-1',
+      'M=M-1',
+
+      '// call Sys.init',
+      '\n',
+    ]
+    self._file_write(codes, debug)
+
+    self.writeCall('Sys.init', 0)
+
+    
 def test_writer():
   cw = CodeWriter('xxx.asm')
   cw.writePushPop('push', 'constant', 7)
@@ -567,4 +689,11 @@ def test_simple_func():
   cw.writeFunction('SimpleFunction.test', 2, debug=True)
   cw.writeReturn(debug=True)
 
-#test_simple_func()
+def test_call_func():
+  cw = CodeWriter('xxx.asm')
+  cw.writePushPop('push', 'constant', 111, debug=True)
+  cw.writeCall('foo', 3, debug=True)
+
+  #print(_count_line_of_code(PUSH_VAL_FROM_D_TO_STACK))
+
+test_call_func()

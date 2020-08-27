@@ -6,6 +6,7 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -28,6 +29,7 @@ M=D
 // push constant 0
 @0
 D=A
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -62,6 +64,7 @@ M=D
 // push constant 1
 @1
 D=A
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -101,6 +104,7 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -109,12 +113,13 @@ M=D
 // push constant 2
 @2
 D=A
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
 M=D
 
-// sub 
+// sub
 @SP
 A=M // get stack pointer base address
 A=A-1 // get top-most value address
@@ -159,6 +164,7 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -185,6 +191,7 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -198,12 +205,13 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
 M=D
 
-// add 
+// add
 @SP
 A=M // get stack pointer base address
 A=A-1 // get top-most value address
@@ -242,6 +250,7 @@ M=D
 // push pointer 1
 @THAT
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -250,12 +259,13 @@ M=D
 // push constant 1
 @1
 D=A
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
 M=D
 
-// add 
+// add
 @SP
 A=M // get stack pointer base address
 A=A-1 // get top-most value address
@@ -287,6 +297,7 @@ D=M
 A=D+A
 // Save value to Reg D
 D=M
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
@@ -295,12 +306,13 @@ M=D
 // push constant 1
 @1
 D=A
+// Save value from D to stack
 @SP
 M=M+1
 A=M-1
 M=D
 
-// sub 
+// sub
 @SP
 A=M // get stack pointer base address
 A=A-1 // get top-most value address
