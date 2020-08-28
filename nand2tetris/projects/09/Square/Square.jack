@@ -62,9 +62,11 @@ class Square {
    method void moveUp() {
       if (y > 1) {
          do Screen.setColor(false);
+         // we remove a small block,  so the Screen shows nice pixels moving
          do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
          let y = y - 2;
          do Screen.setColor(true);
+         // we draw just a small block (similar length from previous)
          do Screen.drawRectangle(x, y, x + size, y + 1);
       }
       return;
@@ -77,7 +79,7 @@ class Square {
          do Screen.drawRectangle(x, y, x + size, y + 1);
          let y = y + 2;
          do Screen.setColor(true);
-         do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
+         do Screen.drawRectangle(x, (y + size) - 2, x + size, y + size);
       }
       return;
    }
@@ -86,10 +88,10 @@ class Square {
    method void moveLeft() {
       if (x > 1) {
          do Screen.setColor(false);
-         do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
+         do Screen.drawRectangle((x + size) - 2, y, x + size, y + size);
          let x = x - 2;
          do Screen.setColor(true);
-         do Screen.drawRectangle(x, y, x + 1, y + size);
+         do Screen.drawRectangle(x, y, x + 2, y + size);
       }
       return;
    }

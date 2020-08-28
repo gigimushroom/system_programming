@@ -1,0 +1,55 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/HelloWorld/Main.jack
+
+/** Hello World program. */
+class Main {
+   
+
+   function void main() {
+      var int memAddress;
+      let memAddress = 16384;
+      do Memory.poke(memAddress+0, 0);
+      do Memory.poke(memAddress+32, 2044);
+      do Memory.poke(memAddress+64, 64);
+      do Memory.poke(memAddress+96, 64);
+      do Memory.poke(memAddress+128, 64);
+      do Memory.poke(memAddress+160, 64);
+      do Memory.poke(memAddress+192, 1016);
+      do Memory.poke(memAddress+224, 64);
+      do Memory.poke(memAddress+256, 64);
+      do Memory.poke(memAddress+288, 64);
+      do Memory.poke(memAddress+320, 2044);
+      do Memory.poke(memAddress+352, 0);
+      do Memory.poke(memAddress+384, 0);
+      do Memory.poke(memAddress+416, 0);
+      do Memory.poke(memAddress+448, 0);
+      do Memory.poke(memAddress+480, 0);
+      // while(true) {
+      //    do Screen.setColor(true);
+      //    do Screen.drawCircle(100, 100, 10);
+      //    do Sys.wait(1000);
+
+      //    do Screen.setColor(false);
+      //    do Screen.drawCircle(100, 100, 10);
+
+      //    do Screen.setColor(true);
+      //    do Screen.drawCircle(100, 150, 10);
+      //    do Sys.wait(1000);
+
+      //    do Screen.setColor(false);
+      //    do Screen.drawCircle(100, 150, 10);
+
+      //    do Screen.setColor(true);
+      //    do Screen.drawCircle(100, 190, 20);
+      //    do Sys.wait(1000);
+
+      //    do Screen.setColor(false);
+      //    do Screen.drawCircle(100, 190, 20);
+
+      // }
+
+      return;
+   }
+}

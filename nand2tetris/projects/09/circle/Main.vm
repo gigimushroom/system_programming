@@ -1,0 +1,101 @@
+function Main.main 1
+push constant 16384
+pop local 0
+push local 0
+push constant 0
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 32
+add
+push constant 2044
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 64
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 96
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 128
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 160
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 192
+add
+push constant 1016
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 224
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 256
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 288
+add
+push constant 64
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 320
+add
+push constant 2044
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 352
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 384
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 416
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 448
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 480
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
