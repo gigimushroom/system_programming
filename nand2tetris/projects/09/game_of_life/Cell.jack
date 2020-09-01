@@ -1,0 +1,28 @@
+
+class Cell {
+  field int x, y;
+
+  constructor Cell new(int Ax, int Ay) {
+      let x = Ax;
+      let y = Ay;
+      return this;
+   }
+
+   method int getx() {
+     return x;
+   }
+
+   method int gety() {
+     return y;
+   }
+
+   method void setx(int Ax) {
+     let x = Ax;
+     return;
+   }
+
+   method void sety(int Ay) {
+     let y = Ay;
+     return;
+   }
+}

@@ -1,0 +1,50 @@
+
+// Display the state of the world
+class Display {
+
+  // constructor Display new() {
+
+  //   return this;
+  // }
+
+  function void DrawCell(int Ax,  int Ay) {
+    var int addr;
+    var int count;
+    var int memAddress;
+    let addr = 16384;
+
+    let addr =  addr + Display._find_start_pos_in_mem(Ax, Ay);
+    let count = 0;
+    while (count < 16) {
+      // Draw 1/16 of the cell.
+      do Memory.poke(addr, -1);
+
+      let addr = addr + 32;
+      let count = count + 1;
+    }
+
+    return;
+  }
+
+  function int _find_start_pos_in_mem(int col, int row) {
+    /** We re-map the 512 * 256 Screen to a smaller board: 32 * 16 (col * row).
+    Column (0 <= r <= 31). Row(0 <= row <= 16)
+    Each row has 32 words, each word can either be filled or empty.
+
+    In our 32 * 16 board, each cell is a 16 * 16 bits square.
+    The size of cell in Screen is 32 * 16, where 32 is Screen's row size.
+
+    Example: To display cell (1, 1) from new board in Screen:
+    Row is 'row * 32 * 16', and column is just 'col'. 
+    The mem address is: row * 32 * 16 + col.
+    */
+    return row * 32 * 16 + col;
+  }
+    
+  function void EmptyBoard() {
+    do Screen.clearScreen();
+
+    return;
+  }
+
+}

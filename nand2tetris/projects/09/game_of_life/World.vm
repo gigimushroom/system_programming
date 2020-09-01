@@ -1,0 +1,815 @@
+function World.new 1
+push constant 1
+call Memory.alloc 1
+pop pointer 0
+push constant 512
+call Array.new 1
+pop this 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 512
+lt
+not
+if-goto WHILE_END0
+push local 0
+push this 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push pointer 0
+return
+function World.find_index_from_cell 1
+push argument 0
+push constant 0
+lt
+push argument 0
+push constant 31
+gt
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 1
+neg
+return
+label IF_FALSE0
+push argument 1
+push constant 0
+lt
+push argument 1
+push constant 15
+gt
+or
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 1
+neg
+return
+label IF_FALSE1
+push constant 32
+push argument 1
+call Math.multiply 2
+push argument 0
+add
+pop local 0
+push local 0
+return
+function World.math_mod 2
+push argument 0
+push argument 1
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 0
+pop local 0
+goto IF_END0
+label IF_FALSE0
+push argument 0
+push argument 1
+call Math.divide 2
+pop local 1
+push argument 0
+push local 1
+push argument 1
+call Math.multiply 2
+sub
+pop local 0
+label IF_END0
+push local 0
+return
+function World.is_filled 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+pop pointer 1
+push that 0
+return
+function World._count_as_life_if_filled 1
+push argument 0
+pop pointer 0
+push argument 1
+push argument 2
+call World.find_index_from_cell 2
+pop local 0
+push local 0
+push constant 1
+neg
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 3
+return
+label IF_FALSE0
+push pointer 0
+push local 0
+call World.is_filled 2
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push argument 3
+push constant 1
+add
+pop argument 3
+label IF_FALSE1
+push argument 3
+return
+function World.count_neighbors_lives_from_cell 5
+push argument 0
+pop pointer 0
+push constant 0
+pop local 4
+push argument 1
+pop local 0
+push argument 2
+pop local 1
+push local 0
+push constant 1
+sub
+pop local 2
+push local 1
+push constant 1
+sub
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+pop local 2
+push local 1
+push constant 1
+sub
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+push constant 1
+add
+pop local 2
+push local 1
+push constant 1
+sub
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+push constant 1
+sub
+pop local 2
+push local 1
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+push constant 1
+add
+pop local 2
+push local 1
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+push constant 1
+sub
+pop local 2
+push local 1
+push constant 1
+add
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+pop local 2
+push local 1
+push constant 1
+add
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 0
+push constant 1
+add
+pop local 2
+push local 1
+push constant 1
+add
+pop local 3
+push pointer 0
+push local 2
+push local 3
+push local 4
+call World._count_as_life_if_filled 4
+pop local 4
+push local 4
+return
+function World.draw_world 3
+push argument 0
+pop pointer 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 512
+lt
+not
+if-goto WHILE_END0
+push local 0
+push this 0
+add
+pop pointer 1
+push that 0
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 0
+push constant 32
+call World.math_mod 2
+pop local 1
+push local 0
+push constant 32
+call Math.divide 2
+pop local 2
+push local 1
+push local 2
+call Display.DrawCell 2
+pop temp 0
+label IF_FALSE0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function World.calc_new_cell_state 3
+push argument 0
+pop pointer 0
+push argument 1
+push constant 32
+call World.math_mod 2
+pop local 1
+push argument 1
+push constant 32
+call Math.divide 2
+pop local 2
+push pointer 0
+push local 1
+push local 2
+call World.count_neighbors_lives_from_cell 3
+pop local 0
+push pointer 0
+push argument 1
+call World.is_filled 2
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 0
+push constant 3
+eq
+push local 0
+push constant 2
+eq
+or
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 1
+return
+label IF_FALSE1
+goto IF_END0
+label IF_FALSE0
+push local 0
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 1
+return
+label IF_FALSE2
+label IF_END0
+push constant 0
+return
+function World.set_pattern 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function World.draw_beacon 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 1
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 32
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 33
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 66
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 67
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 98
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 99
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function World.draw_glider 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 33
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 63
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 64
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 65
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function World.draw_penta 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 31
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 33
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 62
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 66
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 94
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 98
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 126
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 130
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 158
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 162
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 190
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 194
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 222
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 226
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 255
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 257
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 288
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function World.draw_toad 0
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 1
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 2
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 31
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 32
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 1
+push constant 33
+add
+push this 0
+add
+push constant 1
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function World.run 4
+push argument 0
+pop pointer 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 1000
+lt
+not
+if-goto WHILE_END0
+push pointer 0
+call World.draw_world 1
+pop temp 0
+push constant 512
+call Array.new 1
+pop local 3
+push constant 0
+pop local 1
+label WHILE_EXP1
+push local 1
+push constant 512
+lt
+not
+if-goto WHILE_END1
+push local 1
+push local 3
+add
+push pointer 0
+push local 1
+call World.calc_new_cell_state 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 1
+push constant 1
+add
+pop local 1
+goto WHILE_EXP1
+label WHILE_END1
+push constant 0
+pop local 2
+label WHILE_EXP2
+push local 2
+push constant 512
+lt
+not
+if-goto WHILE_END2
+push local 2
+push this 0
+add
+push local 2
+push local 3
+add
+pop pointer 1
+push that 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 2
+push constant 1
+add
+pop local 2
+goto WHILE_EXP2
+label WHILE_END2
+push local 3
+call Array.dispose 1
+pop temp 0
+push constant 100
+call Sys.wait 1
+pop temp 0
+call Display.EmptyBoard 0
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
