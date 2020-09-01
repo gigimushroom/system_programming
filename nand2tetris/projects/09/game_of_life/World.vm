@@ -29,66 +29,42 @@ goto WHILE_EXP0
 label WHILE_END0
 push pointer 0
 return
-function World.find_index_from_cell 1
+function World.setup_game 0
 push argument 0
+pop pointer 0
+push pointer 0
+push constant 2
+call World.set_pattern 2
+pop temp 0
+push pointer 0
+push constant 34
+call World.set_pattern 2
+pop temp 0
+push pointer 0
+push constant 66
+call World.set_pattern 2
+pop temp 0
+push pointer 0
+push constant 412
+call World.draw_beacon 2
+pop temp 0
+push pointer 0
+push constant 384
+call World.draw_beacon 2
+pop temp 0
+push pointer 0
+push constant 54
+call World.draw_glider 2
+pop temp 0
+push pointer 0
+push constant 112
+call World.draw_penta 2
+pop temp 0
+push pointer 0
+push constant 198
+call World.draw_toad 2
+pop temp 0
 push constant 0
-lt
-push argument 0
-push constant 31
-gt
-or
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push constant 1
-neg
-return
-label IF_FALSE0
-push argument 1
-push constant 0
-lt
-push argument 1
-push constant 15
-gt
-or
-if-goto IF_TRUE1
-goto IF_FALSE1
-label IF_TRUE1
-push constant 1
-neg
-return
-label IF_FALSE1
-push constant 32
-push argument 1
-call Math.multiply 2
-push argument 0
-add
-pop local 0
-push local 0
-return
-function World.math_mod 2
-push argument 0
-push argument 1
-lt
-if-goto IF_TRUE0
-goto IF_FALSE0
-label IF_TRUE0
-push argument 0
-pop local 0
-goto IF_END0
-label IF_FALSE0
-push argument 0
-push argument 1
-call Math.divide 2
-pop local 1
-push argument 0
-push local 1
-push argument 1
-call Math.multiply 2
-sub
-pop local 0
-label IF_END0
-push local 0
 return
 function World.is_filled 0
 push argument 0
@@ -104,7 +80,7 @@ push argument 0
 pop pointer 0
 push argument 1
 push argument 2
-call World.find_index_from_cell 2
+call Lib.find_index_from_cell 2
 pop local 0
 push local 0
 push constant 1
@@ -267,7 +243,7 @@ goto IF_FALSE0
 label IF_TRUE0
 push local 0
 push constant 32
-call World.math_mod 2
+call Lib.math_mod 2
 pop local 1
 push local 0
 push constant 32
@@ -291,7 +267,7 @@ push argument 0
 pop pointer 0
 push argument 1
 push constant 32
-call World.math_mod 2
+call Lib.math_mod 2
 pop local 1
 push argument 1
 push constant 32
@@ -730,15 +706,12 @@ push temp 0
 pop that 0
 push constant 0
 return
-function World.run 4
+function World.run 3
 push argument 0
 pop pointer 0
-push constant 0
-pop local 0
 label WHILE_EXP0
-push local 0
-push constant 1000
-lt
+push constant 0
+not
 not
 if-goto WHILE_END0
 push pointer 0
@@ -746,44 +719,44 @@ call World.draw_world 1
 pop temp 0
 push constant 512
 call Array.new 1
-pop local 3
+pop local 2
 push constant 0
-pop local 1
+pop local 0
 label WHILE_EXP1
-push local 1
+push local 0
 push constant 512
 lt
 not
 if-goto WHILE_END1
-push local 1
-push local 3
+push local 0
+push local 2
 add
 push pointer 0
-push local 1
+push local 0
 call World.calc_new_cell_state 2
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push local 1
+push local 0
 push constant 1
 add
-pop local 1
+pop local 0
 goto WHILE_EXP1
 label WHILE_END1
 push constant 0
-pop local 2
+pop local 1
 label WHILE_EXP2
-push local 2
+push local 1
 push constant 512
 lt
 not
 if-goto WHILE_END2
-push local 2
+push local 1
 push this 0
 add
+push local 1
 push local 2
-push local 3
 add
 pop pointer 1
 push that 0
@@ -791,13 +764,13 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push local 2
+push local 1
 push constant 1
 add
-pop local 2
+pop local 1
 goto WHILE_EXP2
 label WHILE_END2
-push local 3
+push local 2
 call Array.dispose 1
 pop temp 0
 push constant 100
@@ -805,10 +778,6 @@ call Sys.wait 1
 pop temp 0
 call Display.EmptyBoard 0
 pop temp 0
-push local 0
-push constant 1
-add
-pop local 0
 goto WHILE_EXP0
 label WHILE_END0
 push constant 0

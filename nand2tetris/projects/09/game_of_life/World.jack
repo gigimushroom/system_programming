@@ -15,41 +15,37 @@ class World {
     return this;
   }
 
-  function int find_index_from_cell(int col, int row) {
-    var int index;
+  /** Set up the game by drawing some patterns on screen. */
+  method void setup_game() {
+    // Blinker
+    do set_pattern(2);
+    do set_pattern(34);
+    do set_pattern(66);
 
-    if ((col < 0) | (col > 31)) {
-      return -1;
-    }
-    if ((row < 0) | (row > 15)) {
-      return -1;
-    }
+    // Beacon
+    do draw_beacon(412);
+    do draw_beacon(384);
 
-    let index = 32 * row + col;
+    // Glider
+    do draw_glider(54);
+    
+    // Pentadecathlon
+    do draw_penta(112);
 
-    return index;
-  }
+    // Toad
+    do draw_toad(198);
 
-  function int math_mod(int c, int m) {
-    var int result, d;
-
-    if (c < m) {
-      let result = c;
-    } else {
-      let d = c / m;
-      let result = c - (d * m);
-    }
-
-    return result;
+    return;
   }
 
   method boolean is_filled(int i) {
     return _world[i];
   }
 
+  /** Check the cell is filled or empty. */
   method int _count_as_life_if_filled(int c, int r, int lives) {
     var int index;
-    let index = World.find_index_from_cell(c, r);
+    let index = Lib.find_index_from_cell(c, r);
 
     if (index = -1) {
       return lives;
@@ -61,6 +57,7 @@ class World {
     return lives;
   }
 
+  /** Count how many neighbours of the cell are filled. */
   method int count_neighbors_lives_from_cell(int col, int row) {
     var int x, y, c, r;
     var int lives;
@@ -68,6 +65,10 @@ class World {
     let lives = 0;
     let x = col;
     let y = row;
+
+    // Each cell has 8 neighbours. 
+    // Due to JACK lanuage is limited, we cannot construct an array
+    // of tuples, so I listed 8 cases.
 
     let c = x-1;
     let r = y-1;
@@ -104,6 +105,7 @@ class World {
     return lives;
   }
   
+  /** Iterate the 512 cells from world array, and draw a cell if filled. */
   method void draw_world() {
     var int i;
     var int x, y;
@@ -114,7 +116,7 @@ class World {
         // Find Cell position x, y from index.
         // x = index % 32, where 32 is the size of row.
         // y is index / 32.
-        let x = World.math_mod(i, 32);
+        let x = Lib.math_mod(i, 32);
         let y = Math.divide(i, 32);
 
         do Display.DrawCell(x, y);
@@ -125,42 +127,39 @@ class World {
     return;
   }
 
+  /** Calculate the new cell's state. */
   method int calc_new_cell_state(int index) {
+    /*
+    Any live cell with two or three live neighbors lives on to the next generation.
+    Any empty cell with exactly three live neighbors becomes a live cell 
+    in the next generation. All other cells are empty in the next generation.
+    */
     var int lives;
     var int x, y;
 
-    let x = World.math_mod(index, 32);
+    let x = Lib.math_mod(index, 32);
     let y = Math.divide(index, 32); 
     let lives = count_neighbors_lives_from_cell(x, y);
 
     if (is_filled(index)) {
-      // do Output.printInt(index);
-      // do Output.printString(", lives:");
-      // do Output.printInt(lives);
-      // do Output.printString(".....");
       if ((lives = 3) | (lives = 2)) {
-        // do Output.printString("FILLED:");
-        // do Output.printInt(index);
-        // do Output.printString("...");
         return 1;
       }
     } else {
       if (lives = 3) {
-        // do Output.printString("EMPTY:");
-        // do Output.printInt(index);
-        // do Output.printString("...");
         return 1;
       }
     }
-
     return 0;
   }
 
+  /** Fill the corresponding cell. */
   method void set_pattern(int index) {
     let _world[index] = 1;
     return;
   }
 
+  /** Draw patterns */
   method void draw_beacon(int pos) {
     let _world[pos] = 1;
     let _world[pos + 1] = 1;
@@ -176,10 +175,6 @@ class World {
   }
 
   method void draw_glider(int pos) {
-    /*   x
-          x
-        xxx
-    */
     let _world[pos] = 1;
     let _world[pos + 33] = 1;
     let _world[pos + 63] = 1;
@@ -224,13 +219,12 @@ class World {
     return;
   } 
 
+  /** Run the Game of Life simulation. */
   method void run() {
-    var int count;
     var int index, i;
     var Array new_world;
 
-    let count = 0;
-    while (count < 1000) {
+    while (true) {
       do draw_world();
 
       let new_world = Array.new(512);
@@ -250,8 +244,6 @@ class World {
 
       do Sys.wait(100);
       do Display.EmptyBoard();
-
-      let count = count + 1;
     }
 
     return;

@@ -8,25 +8,9 @@ class Main {
 
    function void main() {
       var World game;
+
       let game = World.new();
-
-      // Blinker
-      do game.set_pattern(2);
-      do game.set_pattern(34);
-      do game.set_pattern(66);
-
-      // Beacon
-      do game.draw_beacon(412);
-      do game.draw_beacon(384);
-
-      // Glider
-      do game.draw_glider(54);
-      
-      // Pentadecathlon
-      do game.draw_penta(112);
-
-      // Toad
-      do game.draw_toad(198);
+      do game.setup_game();
 
       do game.run();
 

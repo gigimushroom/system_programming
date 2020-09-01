@@ -2,11 +2,7 @@
 // Display the state of the world
 class Display {
 
-  // constructor Display new() {
-
-  //   return this;
-  // }
-
+  /** Draw a cell on a 32 * 16 map. */
   function void DrawCell(int Ax,  int Ay) {
     var int addr;
     var int count;
@@ -15,10 +11,12 @@ class Display {
 
     let addr =  addr + Display._find_start_pos_in_mem(Ax, Ay);
     let count = 0;
+    // The final cell we want to draw is a 16 * 16 square.
     while (count < 16) {
       // Draw 1/16 of the cell.
       do Memory.poke(addr, -1);
 
+      // Next row's address is current address plus 32(words).
       let addr = addr + 32;
       let count = count + 1;
     }
@@ -26,6 +24,7 @@ class Display {
     return;
   }
 
+  /** Find the start memory location of the cell in HACK PC Screen. */
   function int _find_start_pos_in_mem(int col, int row) {
     /** We re-map the 512 * 256 Screen to a smaller board: 32 * 16 (col * row).
     Column (0 <= r <= 31). Row(0 <= row <= 16)
@@ -43,7 +42,6 @@ class Display {
     
   function void EmptyBoard() {
     do Screen.clearScreen();
-
     return;
   }
 

@@ -1,0 +1,31 @@
+class Lib {
+
+  function int math_mod(int c, int m) {
+    var int result, d;
+
+    if (c < m) {
+      let result = c;
+    } else {
+      let d = c / m;
+      let result = c - (d * m);
+    }
+
+    return result;
+  }
+
+  function int find_index_from_cell(int col, int row) {
+    var int index;
+
+    if ((col < 0) | (col > 31)) {
+      return -1;
+    }
+    if ((row < 0) | (row > 15)) {
+      return -1;
+    }
+
+    let index = 32 * row + col;
+
+    return index;
+  }
+
+}

@@ -1,6 +1,21 @@
+# Game of Life Simulation
+It is a zero-player [cellular automaton](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) game, its evolution is determined by its initial state, requiring no further input. 
+
+## Feature
+Press `p` to pause the game. Pause again to continue.
+
+## Rules
+- Any live cell with two or three live neighbors lives on to the next generation.
+- Any empty cell with exactly three live neighbors becomes a live cell in the next generation.
+- All other cells are empty in the next generation.
 
 
-## Convert 2D matric to single array
+## Notes
+1. JACK does not have operator priority. Hence, we must use `()` to set up priority.
+2. JACK array's feature is limited, a few workaround has to be used, caused the program containing duplicated code.
+
+## Tech Details
+### Convert 2D matric to single array
 Given a 3 * 3 table:
 | col, row | col, row | col, row |
 |------|------|------|
@@ -11,6 +26,19 @@ Given a 3 * 3 table:
 Each row size is 3.
 The method to convert it to single array is: <br>
 `index = size ^ row + column`
+
+### a
+We re-map the 512 * 256 Screen to a smaller board: `32 * 16 (col * row)`. \
+`Column (0 <= r <= 31). Row(0 <= row <= 16)` \
+Each row has 32 words, each word can either be filled or empty. 
+
+In our 32 * 16 board, each cell is a 16 * 16 bits square. \
+The size of cell in Screen is 32 * 16, where 32 is Screen's row size. 
+
+Example: \
+To display cell `(1, 1)` in Screen: \
+Row is `row * 32 * 16`, and column is `col`. \
+The memory address in RAM is: `row * 32 * 16 + col`
 
 
 ### Error in nandteris
