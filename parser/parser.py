@@ -29,8 +29,42 @@ def grammar(description, whitespace=r'\s*'):
     lhs, rhs = split(line, ' => ', 1)
     alternatives = split(rhs, ' | ')
     G[lhs] = tuple(map(split, alternatives))
-  # pp.pprint(G)
+  #pp.pprint(G)
   return G
+
+"""
+Grammar() result:
+{' ': '\\s*',
+ 'RE': (['expr', 'RE'], ['expr']),
+ 'alt': (['[(]', 'unit', '[|]', 'unit', '[)]'],),
+ 'dot': (['[.]'],),
+ 'eol': (['[$]'],),
+ 'expr': (['star'],
+          ['plus'],
+          ['opt'],
+          ['alt'],
+          ['oneof'],
+          ['group'],
+          ['lit'],
+          ['dot'],
+          ['eol']),
+ 'group': (['[(]', 'RE', '[)]'],),
+ 'lit': (['\\w+'],),
+ 'oneof': (['[[]', 'lit', '[]]'],),
+ 'opt': (['unit', '[?]'],),
+ 'plus': (['unit', '[+]'],),
+ 'star': (['unit', '[*]'],),
+ 'unit': (['alt'], ['oneof'], ['group'], ['lit'], ['dot'], ['eol'])}
+"""
+
+"""
+Test code:
+>>> from string import split
+>>> l = ['expr RE', 'expr']
+>>> a = tuple(map(split, l))
+>>> print a
+(['expr', 'RE'], ['expr'])
+"""
 
 
 def decorator(d):
@@ -91,9 +125,9 @@ def parse(start_symbol, text, grammar):
 
       return Fail
     else:  # Terminal: match characters against start of text
+      # To match the literals '(' or ')', use \( or \), 
+      # or enclose them inside a character class: [(], [)].
       m = re.match(tokenizer % atom, text)
-      # if m:
-      #  print 'searching:', tokenizer % atom, text, 'Result:', m.group(1)
       return Fail if (not m) else (m.group(1), text[m.end():])
 
   # Body of parse:

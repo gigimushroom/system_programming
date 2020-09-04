@@ -2,7 +2,7 @@
 It is a zero-player [cellular automaton](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) game, its evolution is determined by its initial state, requiring no further input. 
 
 ## Feature
-Press `p` to pause the game. Pause again to continue.
+Long press `p` to pause the game. Press `c` to continue.
 
 ## Rules
 - Any live cell with two or three live neighbors lives on to the next generation.

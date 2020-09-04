@@ -706,14 +706,9 @@ push temp 0
 pop that 0
 push constant 0
 return
-function World.run 3
+function World.next_generation 3
 push argument 0
 pop pointer 0
-label WHILE_EXP0
-push constant 0
-not
-not
-if-goto WHILE_END0
 push pointer 0
 call World.draw_world 1
 pop temp 0
@@ -722,12 +717,12 @@ call Array.new 1
 pop local 2
 push constant 0
 pop local 0
-label WHILE_EXP1
+label WHILE_EXP0
 push local 0
 push constant 512
 lt
 not
-if-goto WHILE_END1
+if-goto WHILE_END0
 push local 0
 push local 2
 add
@@ -742,16 +737,16 @@ push local 0
 push constant 1
 add
 pop local 0
-goto WHILE_EXP1
-label WHILE_END1
+goto WHILE_EXP0
+label WHILE_END0
 push constant 0
 pop local 1
-label WHILE_EXP2
+label WHILE_EXP1
 push local 1
 push constant 512
 lt
 not
-if-goto WHILE_END2
+if-goto WHILE_END1
 push local 1
 push this 0
 add
@@ -768,16 +763,69 @@ push local 1
 push constant 1
 add
 pop local 1
-goto WHILE_EXP2
-label WHILE_END2
+goto WHILE_EXP1
+label WHILE_END1
 push local 2
 call Array.dispose 1
+pop temp 0
+push constant 0
+return
+function World.run 2
+push argument 0
+pop pointer 0
+push constant 0
+pop local 1
+label WHILE_EXP0
+push constant 0
+not
+not
+if-goto WHILE_END0
+call Keyboard.keyPressed 0
+pop local 0
+push local 0
+push constant 80
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 1
+not
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+not
+pop local 1
+call Display.EmptyBoard 0
+pop temp 0
+push pointer 0
+call World.draw_world 1
+pop temp 0
+label IF_FALSE1
+label IF_FALSE0
+push local 0
+push constant 67
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 0
+pop local 1
+label IF_FALSE2
+push local 1
+not
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push pointer 0
+call World.next_generation 1
 pop temp 0
 push constant 100
 call Sys.wait 1
 pop temp 0
 call Display.EmptyBoard 0
 pop temp 0
+label IF_FALSE3
 goto WHILE_EXP0
 label WHILE_END0
 push constant 0

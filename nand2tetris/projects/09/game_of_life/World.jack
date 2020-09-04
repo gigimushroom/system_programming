@@ -219,31 +219,56 @@ class World {
     return;
   } 
 
-  /** Run the Game of Life simulation. */
-  method void run() {
+  /** Simulate the next world states. */
+  method void next_generation() {
     var int index, i;
     var Array new_world;
 
+    do draw_world();
+    let new_world = Array.new(512);
+    let index = 0;
+    while (index < 512) {
+      let new_world[index] = calc_new_cell_state(index);
+      let index = index + 1;
+    }
+
+    // Copy new world states back.
+    let i = 0;
+    while (i < 512) {
+      let _world[i] = new_world[i];
+      let i = i + 1;
+    }
+    do new_world.dispose();
+
+    return;
+  }
+
+  /** Run the Game of Life simulation. */
+  method void run() {
+    var char key;
+    var boolean paused;
+
+    let paused = false;
+
     while (true) {
-      do draw_world();
+      // waits for a key to be pressed
+      let key = Keyboard.keyPressed();
 
-      let new_world = Array.new(512);
-      let index = 0;
-      while (index < 512) {
-        let new_world[index] = calc_new_cell_state(index);
-        let index = index + 1;
+      if (key = 80) { // p key
+        if (~paused) {
+          let paused = true;
+          do Display.EmptyBoard();
+          do draw_world();
+        } 
+      } 
+      
+      if (key = 67) { let paused = false; } // c key
+
+      if (~paused) {
+        do next_generation();
+        do Sys.wait(100);
+        do Display.EmptyBoard();
       }
-
-      // deep copy
-      let i = 0;
-      while (i < 512) {
-        let _world[i] = new_world[i];
-        let i = i + 1;
-      }
-      do new_world.dispose();
-
-      do Sys.wait(100);
-      do Display.EmptyBoard();
     }
 
     return;
