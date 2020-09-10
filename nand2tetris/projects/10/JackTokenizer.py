@@ -1,3 +1,4 @@
+# Tokenizer
 
 
 TYPE_KEYWORD = 'kw'
@@ -27,28 +28,45 @@ def tokenize_line(line):
   save the symbol as another token. Last, we clear the token buffer.
   If we got a whitespace, we save out token. Last, clear token buffer.
 
+  If our element is a string which begin with quote, we want to
+  include everything we see until meet the ending quote.
+
   """
   tokens = []
   element = ''
   for ch in line:
     if ch not in SYMBOLS and ch not in WHITESPACES:
-      element += ch
-    elif ch in SYMBOLS:
-      if element != '':
+      if ch == '"' and element != '':
+        # Our current token got an end quote. Save it.
+        element += ch
         tokens.append(element)
-      tokens.append(ch)
-      element = ''
-    elif ch in WHITESPACES:
-      if element != '':
-        if element[0] != '"':
-          tokens.append(element)
-          element = ''
-        else:
-          # If our current token is a string, <"abc >
-          # We want to take the space into our token, since 
-          # the final result can be <"abc def">.
-          element += ch
+        element = ''
+      else:
+        # soak it in current token.
+        element += ch
 
+    elif ch in SYMBOLS:
+      # If current token is string, the char is also part of our string.
+      if element != '' and element[0] == '"':
+        element += ch
+      else:
+        # Otherwise, save current token, symbol, and clear token buffer.
+        if element != '':
+          tokens.append(element)
+        tokens.append(ch)
+        element = ''
+
+    elif ch in WHITESPACES and element != '':
+      # If we got whitespace char and we have a valid token, save the token
+      # if it is not a string.
+      if element[0] != '"':
+        tokens.append(element)
+        element = ''
+      else:
+        # If our current token is a string, <"abc >
+        # We want to take the space into our token, since 
+        # the final result can be <"abc def">.
+        element += ch
 
   return tokens
 
@@ -67,10 +85,13 @@ class Tokenizer:
         line = line.partition('//')[0]
         line = line.strip()
         line = line.partition('/**')[0]
-        if line:
+        line = line.strip()
+        # This is hacky, we want to removal line starting with * since
+        # that is part of comments.
+        if not line.startswith('*'):
           tokens = tokenize_line(line)
           self.tokens.extend(tokens)
-          print(tokens)
+          #print(tokens)
 
   def hasMoreTokens(self):
     if not self.tokens:
@@ -108,6 +129,14 @@ class Tokenizer:
     return self.tk
 
   def symbol(self):
+    # Python XML writer already handles the encoding.
+    # I do not need to do anything extra.
+
+    # if self.tk == '<':
+    #   return '&lt;'
+    # elif self.tk == '>':
+    #   return '&gt;'
+
     return self.tk
 
   def identifier(self):
@@ -140,14 +169,25 @@ def test_comments():
   pass
 
 def test_long_sentence_in_quote():
-  line = 'let s = "string constant";'
+  line = 'let s = "string __;;;;(constant";'
   tokens = tokenize_line(line)
-  print(tokens)
-  
+  #print(tokens)
+  l1 = ['let', 's', '=', '"string __;;;;(constant"', ';']
+  assert(tokens == l1)
+  print('long sentence tests passed')
 
-def test_special_symbol():
-  pass
+def test_complex_let():
+  line = 'let i = i * (-j);'
+  tokens = tokenize_line(line)
+  #print(tokens)
+  l1 = ['let', 'i', '=', 'i', '*', '(', '-', 'j', ')', ';']
+  assert(tokens == l1)
+  print('Complex let test passed')
 
-test_long_sentence_in_quote()
+def test_all():
+  test_tokenize_line()
+  test_long_sentence_in_quote()
+
+#test_complex_let()
 
 
