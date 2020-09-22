@@ -1,0 +1,26 @@
+<tokens>
+  <keyword> class </keyword>
+  <identifier> Bat </identifier>
+  <symbol> { </symbol>
+  <keyword> field </keyword>
+  <keyword> int </keyword>
+  <identifier> direction </identifier>
+  <symbol> ; </symbol>
+  <keyword> method </keyword>
+  <keyword> void </keyword>
+  <identifier> setDirection </identifier>
+  <symbol> ( </symbol>
+  <keyword> int </keyword>
+  <identifier> Adirection </identifier>
+  <symbol> ) </symbol>
+  <symbol> { </symbol>
+  <keyword> let </keyword>
+  <identifier> direction </identifier>
+  <symbol> = </symbol>
+  <identifier> Adirection </identifier>
+  <symbol> ; </symbol>
+  <keyword> return </keyword>
+  <symbol> ; </symbol>
+  <symbol> } </symbol>
+  <symbol> } </symbol>
+</tokens>

@@ -1,0 +1,24 @@
+<class>
+  <subroutineDec>
+    <parameterList>
+</parameterList>
+    <subroutineBody>
+      <statements>
+        <doStatement>
+          <expressionList>
+            <expression>
+              <term></term>
+              <term>
+                <expression>
+                  <term></term>
+                  <term></term>
+                </expression>
+              </term>
+            </expression>
+          </expressionList>
+        </doStatement>
+        <returnStatement></returnStatement>
+      </statements>
+    </subroutineBody>
+  </subroutineDec>
+</class>

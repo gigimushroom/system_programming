@@ -1,0 +1,7 @@
+function Bat.setDirection 0
+push argument 0
+pop pointer 0
+push argument 1
+pop this 0
+push constant 0
+return
