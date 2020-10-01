@@ -1,0 +1,126 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+    static int head;
+    static Array freeList;
+    static int heapBase;
+
+    /** Initializes the class. */
+    function void init() {
+      let heapBase = 2048;
+      let freeList = heapBase;
+      let freeList[0] = 14335; // total size.
+      let freeList[1] = 0; // next ptr
+      let head = 0; // Points to head of list first.
+
+      return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+      var Array mm;
+      let mm = 0;
+      return mm[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+      var Array mm;
+      let mm = 0;
+
+      let mm[address] = value;
+      return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+      var local needed;
+      var local seg, prev, start;
+      var boolean c;
+      var int total_size, segment_end, block_idx, next_idx;
+
+      let needed = size + 1;
+      let seg = -1;
+      let prev = -1;
+      let start = head;
+      let c = true;
+
+      while (c) {
+        if (freeList[start] > size) {
+          // Found
+          let seg = start;
+          let c = false;
+        } else {
+          // Find next index
+          let prev = start;
+          let start = freeList[start + 1];
+          // Break if we are at tail.
+          if (start = 0) {
+            let c = false;
+          }
+        }
+      }
+          
+      if (seg = -1) {
+        return -1;
+      }
+          
+      let total_size = freeList[seg];
+      
+      // If larger than needed, we cut the block.
+      // Otherwise, we remove the entire block.
+      if (total_size - needed > 1) {
+        // Find size of segment.
+        let segment_end = seg + freeList[seg] - 1;
+        let block_idx = segment_end - needed + 1;
+        let freeList[seg] = freeList[seg] - needed;
+        let freeList[seg + 1] = 0;
+
+        // Set block metadata.
+        let freeList[block_idx] = needed;
+        return heapBase + block_idx + 1;
+      } 
+      else {
+        // Handle head
+        if (seg = 0) {
+          let next_idx = freeList[seg + 1];
+          let head = next_idx;
+        }
+        else {
+          // Handle middle or tail
+          let next_idx = freeList[seg + 1];
+          // Set previous node points to our next. Remove ourself.
+          let freeList[prev + 1] = next_idx;
+        } 
+      } 
+          
+      return heapBase + seg + 1;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+      var int idx;
+      // Find tail of current free list
+      let idx = head + 1;
+      while(~(freeList[idx] = 0)) {
+        let idx = freeList[idx] + 1;
+      }
+          
+      // Set tail ptr points to the freed object.
+      let freeList[idx] = o - 1;
+      // Set new tail next ptr to NULL.
+      let freeList[o - heapBase] = 0;
+
+      return;
+    }    
+}

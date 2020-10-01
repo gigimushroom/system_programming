@@ -8,7 +8,19 @@ class Main {
 
     /** Draws a sample pictue on the screen using lines and circles. */
     function void main() {
-    
+        do Screen.setColor(true); 
+        // do Screen.drawLine(345,35, 280,90);        // roof
+        // do Screen.drawLine(345,35,410,90);        // roof
+        // do Screen.drawPixel(50, 50);
+        //do Screen.drawLine(60, 60, 100, 100); 
+        //do Screen.drawLine(100, 100, 60, 60);
+        //do Screen.drawLine(50, 100, 100, 50); 
+        //do Screen.drawLine(100, 50, 50, 100); 
+        // do Screen.drawLine(60,80,120,80);
+        //do Screen.drawLine(163,85,178,100);
+        //do Screen.drawLine(117,35,102,20); 
+
+        
         do Screen.drawLine(0,220,511,220);        // base line
         do Screen.drawRectangle(280,90,410,220);  // house
         
@@ -29,7 +41,7 @@ class Main {
         do Screen.drawLine(140,94,140,114);       
         do Screen.drawLine(117,85,102,100);       
         do Screen.drawLine(106,60,86,60);       
-        do Screen.drawLine(117,35,102,20);       
+        do Screen.drawLine(117,35,102,20);    
         
         return;
     }
